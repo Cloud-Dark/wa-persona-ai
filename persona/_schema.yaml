@@ -1,0 +1,49 @@
+# Persona YAML Schema Definition
+# This file documents the expected schema for persona files.
+# Use this as reference when creating custom personas.
+
+# =============================================================================
+# Required Fields
+# =============================================================================
+# name:           Unique identifier (lowercase, no spaces, use hyphens)
+# display_name:   Human-readable name
+# version:        Semver string (e.g., "1.0.0")
+# description:    Brief description of the persona
+# system_prompt:  Full system prompt for the LLM
+# traits:         List of personality traits (minimum 2)
+
+# =============================================================================
+# Optional Fields (with defaults)
+# =============================================================================
+# author:         Creator name (default: "unknown")
+# language:
+#   primary:      "id" (default)
+#   style:        "balanced" (default)
+#   tone:         "neutral" (default)
+#   use_emoji:    false (default)
+#   max_emoji_per_message: 3 (default)
+# constraints:
+#   allowed_topics: [] (default: all topics allowed)
+#   blocked_topics: [] (default: none blocked)
+#   max_response_length: 500 (default, in tokens)
+#   response_style: "balanced" (default)
+#   safety_level: "moderate" (default)
+# greeting:
+#   new_user:      "Halo! Senang bertemu denganmu."
+#   returning_user: "Hai lagi! Ada yang bisa dibantu?"
+# memory:
+#   enabled: true (default)
+#   recall_style: "natural" (default)
+#   importance_threshold: 0.5 (default)
+# llm_overrides:   (all optional, inherits from global config)
+
+# =============================================================================
+# Validation Rules
+# =============================================================================
+# - name must be unique across all persona files
+# - name must match regex: ^[a-z0-9][a-z0-9-]*[a-z0-9]$
+# - system_prompt must not be empty
+# - traits must have at least 2 items
+# - temperature must be between 0.0 and 2.0
+# - safety_level must be one of: "strict", "moderate", "relaxed"
+# - response_style must be one of: "concise", "detailed", "balanced"
