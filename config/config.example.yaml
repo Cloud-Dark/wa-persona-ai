@@ -1,0 +1,77 @@
+# WA Persona AI — Example Configuration
+# Copy to config/config.yaml and adjust as needed.
+# API keys should be set via environment variables, not here.
+
+app:
+  name: "WA Persona AI"
+  version: "1.0.0"
+  environment: "development"   # development | production
+
+logging:
+  level: "info"                # debug | info | warn | error
+  format: "text"               # text | json
+  output: "stdout"             # stdout | file
+
+whatsapp:
+  session_dir: "./data/sessions"
+  typing_delay_ms: 1500        # simulate human typing delay
+
+llm:
+  provider: "claude"           # claude | openai
+  fallback_provider: "openai"  # used if primary fails
+
+  claude:
+    api_key: ""                # set via CLAUDE_API_KEY env var
+    model: "claude-haiku-4-5-20251001"
+    max_tokens: 1024
+    temperature: 0.8
+
+  openai:
+    api_key: ""                # set via OPENAI_API_KEY env var
+    model: "gpt-4o-mini"
+    max_tokens: 1024
+    temperature: 0.8
+
+  retry:
+    max_attempts: 3
+    initial_delay_ms: 500
+    max_delay_ms: 10000
+    multiplier: 2.0
+
+persona:
+  dir: "./persona"
+  default: "default"
+
+memory:
+  enabled: true
+  vector_dir: "./data/memory/vectors"
+  metadata_db: "./data/memory/metadata.db"
+
+  embedding:
+    provider: "local"          # local (no API needed) | openai
+    model: ""                  # leave empty for local, or "text-embedding-3-small" for openai
+
+  retrieval:
+    top_k: 5
+    min_similarity: 0.7
+
+  extraction:
+    min_importance: 0.6
+    max_per_message: 3
+
+context:
+  max_tokens: 4096
+  max_history: 20              # conversation turns to include
+  include_memories: true
+  memory_max_tokens: 512
+
+rate_limit:
+  enabled: true
+  per_user:
+    messages_per_minute: 10
+    messages_per_hour: 100
+
+admin:
+  numbers: []                  # set via WPA_ADMIN_NUMBERS env var, or list here
+  # numbers:
+  #   - "628123456789"

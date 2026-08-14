@@ -1,0 +1,31 @@
+# ─── Binaries ────────────────────────────────────────────────────────
+bin/
+dist/
+*.exe
+*.out
+
+# ─── Go ──────────────────────────────────────────────────────────────
+vendor/
+
+# ─── Secrets & Config ────────────────────────────────────────────────
+.env
+config/config.yaml
+config/config.*.yaml
+!config/config.example.yaml
+
+# ─── Runtime Data ────────────────────────────────────────────────────
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# ─── WhatsApp Session ────────────────────────────────────────────────
+sessions/
+
+# ─── OS & Editor ────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
