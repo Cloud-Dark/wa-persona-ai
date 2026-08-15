@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/mdp/qrterminal/v3"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/store/sqlstore"
 	"go.mau.fi/whatsmeow/types/events"
 	waLog "go.mau.fi/whatsmeow/util/log"
+	_ "modernc.org/sqlite"
 )
 
 // Client wraps the whatsmeow client.
@@ -26,7 +28,7 @@ func NewClient(sessionDir string) (*Client, error) {
 	}
 
 	dbPath := sessionDir + "/whatsapp.db"
-	container, err := sqlstore.New(context.Background(), "sqlite3", fmt.Sprintf("file:%s?_foreign_keys=on", dbPath), waLog.Noop)
+	container, err := sqlstore.New(context.Background(), "sqlite", fmt.Sprintf("file:%s?_foreign_keys=on", dbPath), waLog.Noop)
 	if err != nil {
 		return nil, fmt.Errorf("create sqlstore: %w", err)
 	}
@@ -106,13 +108,17 @@ func setupLogger() zerolog.Logger {
 	return log.With().Str("component", "whatsapp").Logger()
 }
 
-// printQR prints the QR code to terminal using ASCII art.
+// printQR renders a scannable QR code in the terminal.
 func printQR(code string) {
-	fmt.Println("\n" + `
-╔═══════════════════════════════════════╗
-║       WA PERSONA AI — SCAN QR CODE   ║
-╚═══════════════════════════════════════╝`)
-	fmt.Printf("QR Code: %s\n\n", code)
-	fmt.Println("Open WhatsApp → Linked Devices → Link a Device → Scan the code above")
-	fmt.Println("(For better rendering, use a QR code library or terminal with QR support)")
+	fmt.Println("\n╔═══════════════════════════════════════╗")
+	fmt.Println("║       WA PERSONA AI — SCAN QR CODE   ║")
+	fmt.Println("╚═══════════════════════════════════════╝")
+	qrterminal.GenerateWithConfig(code, qrterminal.Config{
+		Level:     qrterminal.M,
+		Writer:    os.Stdout,
+		BlackChar: qrterminal.BLACK,
+		WhiteChar: qrterminal.WHITE,
+		QuietZone: 1,
+	})
+	fmt.Println("Open WhatsApp → Linked Devices → Link a Device → scan kode di atas")
 }

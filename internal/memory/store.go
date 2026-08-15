@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 	"github.com/philippgille/chromem-go"
 	"github.com/rs/zerolog/log"
 )
@@ -34,7 +34,7 @@ func NewStore(vectorDir, metadataDB string, topK int, minSim float64, openAIKey 
 		return nil, fmt.Errorf("create metadata dir: %w", err)
 	}
 
-	db, err := sql.Open("sqlite3", metadataDB+"?_journal=WAL&_timeout=5000")
+	db, err := sql.Open("sqlite", metadataDB+"?_journal=WAL&_timeout=5000")
 	if err != nil {
 		return nil, fmt.Errorf("open sqlite: %w", err)
 	}

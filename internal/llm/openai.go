@@ -7,28 +7,46 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
-const openaiAPIURL = "https://api.openai.com/v1/chat/completions"
+const defaultOpenAIBaseURL = "https://api.openai.com/v1"
 
-// OpenAIProvider implements Provider for OpenAI GPT models.
+// OpenAIProvider implements Provider for OpenAI-compatible APIs.
 type OpenAIProvider struct {
 	apiKey      string
 	model       string
 	maxTokens   int
 	temperature float64
+	baseURL     string
 	client      *http.Client
 }
 
-// NewOpenAIProvider creates a new OpenAI provider.
+// NewOpenAIProvider creates a new OpenAI-compatible provider.
 func NewOpenAIProvider(apiKey, model string, maxTokens int, temperature float64) *OpenAIProvider {
 	return &OpenAIProvider{
 		apiKey:      apiKey,
 		model:       model,
 		maxTokens:   maxTokens,
 		temperature: temperature,
-		client:      &http.Client{Timeout: 60 * time.Second},
+		baseURL:     defaultOpenAIBaseURL,
+		client:      &http.Client{Timeout: 120 * time.Second},
+	}
+}
+
+// NewOpenAICompatibleProvider creates a provider pointing at a custom base URL.
+func NewOpenAICompatibleProvider(apiKey, model string, maxTokens int, temperature float64, baseURL string) *OpenAIProvider {
+	if baseURL == "" {
+		baseURL = defaultOpenAIBaseURL
+	}
+	return &OpenAIProvider{
+		apiKey:      apiKey,
+		model:       model,
+		maxTokens:   maxTokens,
+		temperature: temperature,
+		baseURL:     strings.TrimRight(baseURL, "/"),
+		client:      &http.Client{Timeout: 120 * time.Second},
 	}
 }
 
@@ -95,7 +113,8 @@ func (p *OpenAIProvider) Generate(ctx context.Context, req *Request) (*Response,
 		return nil, fmt.Errorf("marshal request: %w", err)
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, openaiAPIURL, bytes.NewReader(data))
+	url := p.baseURL + "/chat/completions"
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(data))
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
@@ -119,11 +138,11 @@ func (p *OpenAIProvider) Generate(ctx context.Context, req *Request) (*Response,
 	}
 
 	if result.Error != nil {
-		return nil, fmt.Errorf("openai api error [%s]: %s", result.Error.Type, result.Error.Message)
+		return nil, fmt.Errorf("api error [%s]: %s", result.Error.Type, result.Error.Message)
 	}
 
 	if len(result.Choices) == 0 {
-		return nil, fmt.Errorf("empty response from openai")
+		return nil, fmt.Errorf("empty response from api")
 	}
 
 	return &Response{

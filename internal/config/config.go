@@ -43,10 +43,11 @@ type ClaudeConfig struct {
 }
 
 type OpenAIConfig struct {
-	APIKey    string `yaml:"api_key"`
-	Model     string `yaml:"model"`
-	MaxTokens int    `yaml:"max_tokens"`
+	APIKey      string  `yaml:"api_key"`
+	Model       string  `yaml:"model"`
+	MaxTokens   int     `yaml:"max_tokens"`
 	Temperature float64 `yaml:"temperature"`
+	BaseURL     string  `yaml:"base_url"`
 }
 
 type RetryConfig struct {
@@ -132,6 +133,9 @@ type FileLogConfig struct {
 func Load(path string) (*Config, error) {
 	cfg := defaultConfig()
 
+	// Load .env file if present (simple key=value parser)
+	loadDotEnv(".env")
+
 	if path == "" {
 		path = "config/config.yaml"
 	}
@@ -150,6 +154,30 @@ func Load(path string) (*Config, error) {
 	applyEnvOverrides(cfg)
 
 	return cfg, nil
+}
+
+// loadDotEnv reads a .env file and sets missing environment variables.
+func loadDotEnv(path string) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		idx := strings.IndexByte(line, '=')
+		if idx < 1 {
+			continue
+		}
+		key := strings.TrimSpace(line[:idx])
+		val := strings.TrimSpace(line[idx+1:])
+		// Only set if not already set
+		if os.Getenv(key) == "" {
+			_ = os.Setenv(key, val)
+		}
+	}
 }
 
 func applyEnvOverrides(cfg *Config) {

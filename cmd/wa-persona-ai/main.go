@@ -160,14 +160,15 @@ func main() {
 func buildLLMProvider(cfg *config.Config) llm.Provider {
 	var primary, fallback llm.Provider
 
+	newOpenAI := func(c config.OpenAIConfig) llm.Provider {
+		return llm.NewOpenAICompatibleProvider(
+			c.APIKey, c.Model, c.MaxTokens, c.Temperature, c.BaseURL,
+		)
+	}
+
 	switch cfg.LLM.Provider {
 	case "openai":
-		primary = llm.NewOpenAIProvider(
-			cfg.LLM.OpenAI.APIKey,
-			cfg.LLM.OpenAI.Model,
-			cfg.LLM.OpenAI.MaxTokens,
-			cfg.LLM.OpenAI.Temperature,
-		)
+		primary = newOpenAI(cfg.LLM.OpenAI)
 		if cfg.LLM.FallbackProvider == "claude" && cfg.LLM.Claude.APIKey != "" {
 			fallback = llm.NewClaudeProvider(
 				cfg.LLM.Claude.APIKey,
@@ -184,12 +185,7 @@ func buildLLMProvider(cfg *config.Config) llm.Provider {
 			cfg.LLM.Claude.Temperature,
 		)
 		if cfg.LLM.FallbackProvider == "openai" && cfg.LLM.OpenAI.APIKey != "" {
-			fallback = llm.NewOpenAIProvider(
-				cfg.LLM.OpenAI.APIKey,
-				cfg.LLM.OpenAI.Model,
-				cfg.LLM.OpenAI.MaxTokens,
-				cfg.LLM.OpenAI.Temperature,
-			)
+			fallback = newOpenAI(cfg.LLM.OpenAI)
 		}
 	}
 
